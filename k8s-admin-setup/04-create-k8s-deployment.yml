@@ -7,7 +7,7 @@
     - name: Copy project_deployment.yml to k8s workstation
       copy:
         src: chatApp_deployment.yml
-        dest: /home/ec2-user/chatApp_deployment.yml
+        dest: /home/ec2-user/deployment.yml
         owner: ec2-user
         group: ec2-user
         mode: '0644'
@@ -19,7 +19,37 @@
         chown -R ec2-user:ec2-user /home/ec2-user/.kube
         chown ec2-user:ec2-user /home/ec2-user/.kube/config
         until kops validate cluster --name=chatApp.k8s.local --state=s3://chatApp-k8s-store; do echo "Waiting for cluster..."; sleep 30; done
-        kubectl apply -f /home/ec2-user/chatApp_deployment.yml
+        kubectl apply -f /home/ec2-user/deployment.yml
         sleep 300
       args:
         executable: /bin/bash
+
+
+
+# Below is for more dynamic tags...ayoyinka/chatApp: { counter }
+
+# ---
+# - name: Copy and apply Kubernetes deployment
+#   hosts: k8s-workstation
+#   become: yes
+#   tasks:
+
+#     - name: Copy project_deployment.yml to k8s workstation
+#       copy:
+#         src: chatApp_deployment.yml
+#         dest: /home/ec2-user/chatApp_deployment.yml
+#         owner: ec2-user
+#         group: ec2-user
+#         mode: '0644'
+
+#     - name: Apply the Kubernetes deployment
+#       shell: |      
+#         kops export kubecfg --name=chatApp.k8s.local --state=s3://chatApp-k8s-store
+#         mkdir -p /home/ec2-user/.kube
+#         chown -R ec2-user:ec2-user /home/ec2-user/.kube
+#         chown ec2-user:ec2-user /home/ec2-user/.kube/config
+#         until kops validate cluster --name=chatApp.k8s.local --state=s3://chatApp-k8s-store; do echo "Waiting for cluster..."; sleep 30; done
+#         kubectl apply -f /home/ec2-user/chatApp_deployment.yml
+#         sleep 300
+#       args:
+#         executable: /bin/bash
