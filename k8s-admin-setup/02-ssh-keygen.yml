@@ -9,4 +9,4 @@
         creates: ~/.ssh/id_rsa
 
     - name: Upload public key to S3 bucket
-      ansible.builtin.command: aws s3 cp ~/.ssh/id_rsa.pub s3://final-project-1-k8s-store/kops-key.pub
+      ansible.builtin.command: aws s3 cp ~/.ssh/id_rsa.pub s3://chatApp k8s-store/kops-key.pub
