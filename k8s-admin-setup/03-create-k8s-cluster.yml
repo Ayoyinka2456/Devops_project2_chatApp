@@ -6,10 +6,10 @@
     - name: Run kops create cluster
       shell: |
         kops create cluster \
-          --state=s3://final-project-1-k8s-store \
-          --zones=us-east-2a,us-east-2b \
+          --state=s3://chatApp-k8s-store \
+          --zones=us-east-2a \
           --node-count=2 \
-          --name=final-project-1.k8s.local \
+          --name=chatApp.k8s.local \
           --node-size=t2.medium \
           --control-plane-size=t2.medium \
           --networking=calico \
