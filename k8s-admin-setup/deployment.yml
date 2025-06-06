@@ -2,34 +2,34 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: project-app
+  name: chatApp
   labels:
-    app: project-app
+    app: chatApp
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: project-app
+      app: chatApp
   template:
     metadata:
       labels:
-        app: project-app
+        app: chatApp
     spec:
       containers:
-        - name: project-app
-          image: ayoyinka/java_app_5_25:1
+        - name: chatApp
+          image: ayoyinka/chatApp:1
           ports:
-            - containerPort: 8080
+            - containerPort: 3000
 
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: project-app
+  name: chatApp
 spec:
   type: LoadBalancer
   selector:
-    app: project-app
+    app: chatApp
   ports:
-    - port: 8081
-      targetPort: 8080
+    - port: 3000
+      targetPort: 3000
