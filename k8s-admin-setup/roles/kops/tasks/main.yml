@@ -1,0 +1,17 @@
+#kops yml  roles/kops/tasks/main.yml
+
+---
+- name: Download kOps binary
+  get_url:
+    url: https://github.com/kubernetes/kops/releases/download/v1.28.0/kops-linux-amd64
+    dest: /usr/local/bin/kops
+    mode: '0755'
+
+- name: Verify kOps version
+  command: kops version
+  register: kops_version
+  ignore_errors: yes
+
+- name: Show kOps version
+  debug:
+    var: kops_version.stdout

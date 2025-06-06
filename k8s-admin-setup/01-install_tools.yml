@@ -1,0 +1,14 @@
+#install tools yml 
+
+---
+- name: Install Kubernetes Admin Tools
+  hosts: k8s-workstation
+  become: yes
+
+  roles:
+    - awscli
+    - kubectl
+    - kops
+    - docker
+    - python_jinja
+#    - amazon_aws_setup

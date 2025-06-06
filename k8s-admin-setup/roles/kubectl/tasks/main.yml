@@ -1,0 +1,17 @@
+#kubectl yml  roles/kubectl/tasks/main.yml
+
+---
+- name: Download kubectl binary
+  get_url:
+    url: https://dl.k8s.io/release/v1.28.0/bin/linux/amd64/kubectl
+    dest: /usr/local/bin/kubectl
+    mode: '0755'
+
+- name: Verify kubectl installed
+  command: kubectl version --client
+  register: kubectl_version
+  ignore_errors: yes
+
+- name: Show kubectl version
+  debug:
+    var: kubectl_version.stdout

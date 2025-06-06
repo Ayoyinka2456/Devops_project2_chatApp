@@ -1,0 +1,16 @@
+---
+- name: Create Kubernetes Cluster with kOps
+  hosts: k8s-workstation
+  become: yes
+  tasks:
+    - name: Run kops create cluster
+      shell: |
+        kops create cluster \
+          --state=s3://final-project-1-k8s-store \
+          --zones=us-east-2a,us-east-2b \
+          --node-count=2 \
+          --name=final-project-1.k8s.local \
+          --node-size=t2.medium \
+          --control-plane-size=t2.medium \
+          --networking=calico \
+          --yes

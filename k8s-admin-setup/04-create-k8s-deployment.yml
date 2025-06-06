@@ -1,0 +1,25 @@
+---
+- name: Copy and apply Kubernetes deployment
+  hosts: k8s-workstation
+  become: yes
+  tasks:
+
+    - name: Copy project_deployment.yml to k8s workstation
+      copy:
+        src: project_deployment.yml
+        dest: /home/ec2-user/project_deployment.yml
+        owner: ec2-user
+        group: ec2-user
+        mode: '0644'
+
+    - name: Apply the Kubernetes deployment
+      shell: |      
+        kops export kubecfg --name=final-project-1.k8s.local --state=s3://final-project-1-k8s-store
+        mkdir -p /home/ec2-user/.kube
+        chown -R ec2-user:ec2-user /home/ec2-user/.kube
+        chown ec2-user:ec2-user /home/ec2-user/.kube/config
+        until kops validate cluster --name=final-project-1.k8s.local --state=s3://final-project-1-k8s-store; do echo "Waiting for cluster..."; sleep 30; done
+        kubectl apply -f /home/ec2-user/project_deployment.yml
+        sleep 300
+      args:
+        executable: /bin/bash
