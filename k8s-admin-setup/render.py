@@ -6,13 +6,13 @@ with open('counter.txt') as f:
 
 # Set up Jinja2 environment
 env = Environment(loader=FileSystemLoader('.'))
-template = env.get_template('project_deployment.j2')
+template = env.get_template('chatApp_deployment.j2')
 
 # Render the template
 output = template.render(counter=counter)
 
 # Write the rendered YAML to file
-with open('project_deployment.yml', 'w') as f:
+with open('chatApp_deployment.yml', 'w') as f:
     f.write(output)
 
 
@@ -22,5 +22,5 @@ with open('project_deployment.yml', 'w') as f:
 
 
 # RUN below command
-#kubectl apply -f project_deployment.yml
+#kubectl apply -f chatApp_deployment.yml
 
