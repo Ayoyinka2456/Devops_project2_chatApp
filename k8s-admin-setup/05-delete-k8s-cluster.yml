@@ -6,6 +6,6 @@
     - name: Delete kOps cluster
       shell: |
         kops delete cluster \
-          --name=final-project-1.k8s.local \
-          --state=s3://final-project-1-k8s-store \
+          --name=chatApp.k8s.local \
+          --state=s3://chatApp-k8s-store \
           --yes
