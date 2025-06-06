@@ -15,7 +15,7 @@ pipeline {
                 sh "whoami"
                 sh "sudo rm -rf *"
                 sh "ls && pwd"
-                git branch: 'troubleshoot', url: 'https://github.com/Ayoyinka2456/Devops_project2_chatApp2_chatApp.git'
+                git branch: 'troubleshoot', url: 'https://github.com/Ayoyinka2456/Devops_project2_chatApp.git'
             }
         }
 
