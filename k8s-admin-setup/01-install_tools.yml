@@ -8,7 +8,7 @@
   roles:
     - awscli
     - kubectl
-    - kops
+    - eksctl
     - docker
     - python_jinja
 #    - amazon_aws_setup
