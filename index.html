@@ -1,0 +1,21 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>CEEYIT Chat</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #eef; text-align: center; margin-top: 100px; }
+    h2 { color: #333; }
+    p { font-size: 18px; }
+  </style>
+</head>
+<body>
+  <h2>CEEYIT Real-Time Chat App</h2>
+  <p>Status: <span id="status">Connecting...</span></p>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    document.getElementById('status').textContent = 'Connected';
+  </script>
+</body>
+</html>
