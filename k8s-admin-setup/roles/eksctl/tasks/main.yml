@@ -1,0 +1,54 @@
+# install_weave_tools.yml
+---
+- name: Install eksctl and weaveworks tap
+  hosts: k8s-workstation
+  become: yes
+  tasks:
+    - name: Download eksctl archive
+      get_url:
+        url: "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_{{ ansible_system }}_amd64.tar.gz"
+        dest: /tmp/eksctl.tar.gz
+
+    - name: Extract eksctl
+      unarchive:
+        src: /tmp/eksctl.tar.gz
+        dest: /tmp/
+        remote_src: yes
+
+    - name: Move eksctl to /usr/local/bin
+      copy:
+        src: /tmp/eksctl
+        dest: /usr/local/bin/eksctl
+        mode: '0755'
+
+    - name: Clean up eksctl archive
+      file:
+        path: /tmp/eksctl.tar.gz
+        state: absent
+
+    - name: Show eksctl version
+      command: eksctl version
+      register: eksctl_output
+      ignore_errors: yes
+
+    - debug:
+        var: eksctl_output.stdout
+
+    - name: Get latest tag for TAP CLI
+      shell: |
+        curl -s https://api.github.com/repos/weaveworks/tap/releases/latest | jq -r '.tag_name'
+      register: tap_latest_tag
+
+    - name: Download weaveworks tap binary
+      get_url:
+        url: "https://github.com/weaveworks/tap/releases/download/{{ tap_latest_tag.stdout }}/tap-linux-amd64"
+        dest: /usr/local/bin/tap
+        mode: '0755'
+
+    - name: Show tap version
+      command: tap version
+      register: tap_output
+      ignore_errors: yes
+
+    - debug:
+        var: tap_output.stdout
