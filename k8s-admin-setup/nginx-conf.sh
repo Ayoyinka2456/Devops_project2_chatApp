@@ -36,5 +36,5 @@ http {
 EOF
 
 # Test and reload
-sudo nginx -t && sudo systemctl reload nginx
+sudo nginx -t && sudo systemctl restart nginx
 echo "✅ NGINX configuration updated and reloaded."
