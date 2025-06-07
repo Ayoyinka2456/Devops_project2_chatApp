@@ -1,5 +1,5 @@
 ---
-- name: Install Nginx on target host
+- name: Install and start Nginx on target host
   hosts: nginx
   become: yes
   tasks:
@@ -7,3 +7,9 @@
       yum:
         name: nginx
         state: present
+
+    - name: Enable and start Nginx service
+      systemd:
+        name: nginx
+        state: started
+        enabled: yes
