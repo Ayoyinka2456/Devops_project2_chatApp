@@ -1,0 +1,20 @@
+---
+- name: Copy and apply Kubernetes deployment
+  hosts: k8s-workstation
+  become: no
+  tasks:
+
+    - name: See output of Kubernetes deployment
+      shell: |
+        kubectl get all -o wide
+        echo "$(kubectl get svc chatapp-service -o jsonpath="{.status.loadBalancer.ingress[0].hostname}"):$(kubectl get svc chatapp-service -o jsonpath="{.spec.ports[0].port}")" > external-ip.txt
+        
+        SVC_DNS=$(kubectl get svc chatapp-service -o jsonpath="{.status.loadBalancer.ingress[0].hostname}")
+        echo "🔗 chatApp is available at: http://${SVC_DNS}:3000"
+      args:
+        executable: /bin/bash
+
+
+
+
+
