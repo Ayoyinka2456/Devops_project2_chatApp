@@ -1,18 +1,18 @@
 from jinja2 import Environment, FileSystemLoader
 
 # Read the counter value from counter.txt
-with open('counter.txt') as f:
+with open('TAG.txt') as f:
     counter = f.read().strip()
 
 # Set up Jinja2 environment
 env = Environment(loader=FileSystemLoader('.'))
-template = env.get_template('chatApp_deployment.j2')
+template = env.get_template('deployment.j2')
 
 # Render the template
-output = template.render(counter=counter)
+output = template.render(TAG=TAG)
 
 # Write the rendered YAML to file
-with open('chatApp_deployment.yml', 'w') as f:
+with open('deployment.yml', 'w') as f:
     f.write(output)
 
 
@@ -22,5 +22,5 @@ with open('chatApp_deployment.yml', 'w') as f:
 
 
 # RUN below command
-#kubectl apply -f chatApp_deployment.yml
+#kubectl apply -f deployment.yml
 
