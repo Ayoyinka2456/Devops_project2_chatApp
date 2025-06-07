@@ -1,7 +1,5 @@
 pipeline {
-    agent {
-        label 'Jenkins_Server'
-    }
+    agent none  // Prevent default agent; enforce per-stage assignment
 
     environment {
         DOCKERHUB_CREDENTIALS = credentials('docker_login')
@@ -9,8 +7,9 @@ pipeline {
 
     stages {
         stage('Checkout') {
+            agent { label 'Jenkins_Server' }
             steps {
-                echo "Cleaning workspace..."
+                echo "🧹 Cleaning workspace..."
                 sh "whoami"
                 sh "sudo rm -rf *"
                 sh "ls && pwd"
@@ -19,9 +18,10 @@ pipeline {
         }
 
         stage('Restore Artifacts') {
+            agent { label 'Jenkins_Server' }
             steps {
                 script {
-                    echo "Restoring artifacts from previous successful build..."
+                    echo "📦 Restoring artifacts from previous successful build..."
                     copyArtifacts(
                         projectName: env.JOB_NAME,
                         selector: [$class: 'StatusBuildSelector', stable: true],
@@ -33,9 +33,7 @@ pipeline {
         }
 
         stage('Read IPs from Files') {
-            agent {
-                label 'TF_ANS_Server'
-            }
+            agent { label 'TF_ANS_Server' }
             steps {
                 script {
                     if (fileExists('NGINX_IP.txt') && fileExists('K8S_IP.txt')) {
@@ -51,15 +49,29 @@ pipeline {
         }
 
         stage('Dockerize') {
-            agent {
-                label 'TF_ANS_Server'
-            }
+            agent { label 'TF_ANS_Server' }
             steps {
                 script {
                     sh '''
+                        REPO_DIR="Devops_project2_chatApp"
+
+                        if [ -d "$REPO_DIR/.git" ]; then
+                            echo "✅ Repo already exists. Pulling latest changes..."
+                            cd $REPO_DIR
+                            git reset --hard
+                            git clean -fd
+                            git pull origin troubleshoot
+                        else
+                            echo "📥 Cloning repo..."
+                            git clone -b troubleshoot https://github.com/Ayoyinka2456/Devops_project2_chatApp.git
+                            cd $REPO_DIR
+                        fi
+
+                        pwd
+                        ls
                         REPO="ayoyinka/chatapp"
                         TAG=1
-                        echo "Checking for the next available Docker tag for $REPO..."
+                        echo "🔍 Checking for the next available Docker tag for $REPO..."
                         while true; do
                           RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" https://hub.docker.com/v2/repositories/${REPO}/tags/${TAG}/)
                           if [ "$RESPONSE" -eq 404 ]; then
@@ -69,29 +81,28 @@ pipeline {
                             TAG=$((TAG + 1))
                           fi
                         done
-                        echo "Building Docker image with tag: ${NEXT_TAG}"
-                        docker build -t ${REPO}:${NEXT_TAG} .
-                        docker login -u "${DOCKERHUB_CREDENTIALS_USR}" -p "${DOCKERHUB_CREDENTIALS_PSW}"
-                        docker push ${REPO}:${NEXT_TAG}
+                        echo "🐳 Building Docker image with tag: ${NEXT_TAG}"
+                        sudo docker build -t ${REPO}:${NEXT_TAG} .
+                        sudo docker login -u "${DOCKERHUB_CREDENTIALS_USR}" -p "${DOCKERHUB_CREDENTIALS_PSW}"
+                        sudo docker push ${REPO}:${NEXT_TAG}
                         echo "$NEXT_TAG" > ${WORKSPACE}/TAG.txt
+                        cd ..
                     '''
                 }
             }
         }
 
         stage('Terraform') {
-            agent {
-                label 'TF_ANS_Server'
-            }
+            agent { label 'TF_ANS_Server' }
             steps {
                 script {
                     if (env.K8S_IP) {
                         sh '''
-                            echo "Cleaning up previous K8s workstation..."
+                            echo "🧹 Cleaning up previous Kubernetes workstation..."
                             chmod 400 Devops_project2_chatApp/k8s-admin-setup/devops_1.pem
                             ssh -o StrictHostKeyChecking=no -i Devops_project2_chatApp/k8s-admin-setup/devops_1.pem ec2-user@${K8S_IP} <<'ENDSSH'
-echo "Connected to K8s workstation"
 if command -v eksctl &> /dev/null; then
+    echo "🗑 Deleting existing Kubernetes cluster..."
     kubectl delete all --all --all-namespaces
     kubectl delete pvc --all --all-namespaces
     kubectl delete configmap --all --all-namespaces
@@ -106,23 +117,14 @@ fi
 ENDSSH
                         '''
                     }
-
                     sh '''
-                        # Remove old terraform lock but keep state
+                        echo "🚀 Running Terraform"|
+                        echo ${WORKSPACE}
+                        TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
+                        curl -H "X-aws-ec2-metadata-token: $TOKEN" -s http://169.254.169.254/latest/meta-data/local-ipv4
                         rm -f Devops_project2_chatApp/terraform.lock.hcl
-        
-                        # Clone fresh repo in a temp folder to get new .tf files
-                        rm -rf Devops_project2_chatApp_new
-                        git clone -b troubleshoot https://github.com/Ayoyinka2456/Devops_project2_chatApp.git Devops_project2_chatApp_new
-        
-                        # Copy over new terraform files into main folder (but keep existing state files)
-                        cp -r Devops_project2_chatApp_new/* Devops_project2_chatApp/
-        
-                        # Initialize terraform in main folder
                         cd Devops_project2_chatApp
                         terraform init
-        
-                        # Apply incremental changes
                         terraform apply -auto-approve
                         sleep 120
 
@@ -157,50 +159,43 @@ EOF
         }
 
         stage('Ansible') {
-            agent {
-                label 'TF_ANS_Server'
-            }
+            agent { label 'TF_ANS_Server' }
             steps {
-                script {
-                    dir('k8s-admin-setup') {
-                        sh '''
-                            ansible-playbook -i hosts.ini 01-*
-                            sleep 120
-                            ansible-playbook -i hosts.ini 02-*
-                            sleep 120
-                            ansible-playbook -i hosts.ini 03-*
-                            sleep 120
-                            ansible-playbook -i hosts.ini 04-*
-                            sleep 120
-                        '''
-                    }
+                dir('k8s-admin-setup') {
+                    sh '''
+                        ansible-playbook -i hosts.ini 01-*
+                        sleep 120
+                        ansible-playbook -i hosts.ini 02-*
+                        sleep 120
+                        ansible-playbook -i hosts.ini 03-*
+                        sleep 120
+                        ansible-playbook -i hosts.ini 04-*
+                        sleep 120
+                    '''
                 }
             }
         }
 
         stage('K8s-workstation -> NGINX') {
+            agent { label 'TF_ANS_Server' }
             steps {
-                script {
-                    dir('k8s-admin-setup') {
-                        sh '''
-                            ssh -o StrictHostKeyChecking=no -i devops_1.pem ec2-user@${K8S_IP} <<'ENDSSH'
-echo "Connected to K8s workstation"
+                dir('k8s-admin-setup') {
+                    sh '''
+                        ssh -o StrictHostKeyChecking=no -i devops_1.pem ec2-user@${K8S_IP} <<'ENDSSH'
 cd /home/ec2-user/k8s-admin-setup
 chmod +x service_info.sh
 ./generate_service_info.sh
 ENDSSH
 
-                            scp -o StrictHostKeyChecking=no -i devops_1.pem ec2-user@${K8S_IP}:/home/ec2-user/k8s-admin-setup/SVC_*.txt .
-                            scp -o StrictHostKeyChecking=no -i devops_1.pem SVC_DNS.txt SVC_PORT.txt nginx-conf.sh ec2-user@${NGINX_IP}:/home/ec2-user/
+                        scp -o StrictHostKeyChecking=no -i devops_1.pem ec2-user@${K8S_IP}:/home/ec2-user/k8s-admin-setup/SVC_*.txt .
+                        scp -o StrictHostKeyChecking=no -i devops_1.pem SVC_DNS.txt SVC_PORT.txt nginx-conf.sh ec2-user@${NGINX_IP}:/home/ec2-user/
 
-                            ssh -o StrictHostKeyChecking=no -i devops_1.pem ec2-user@${NGINX_IP} <<'ENDSSH'
-echo "On NGINX server"
+                        ssh -o StrictHostKeyChecking=no -i devops_1.pem ec2-user@${NGINX_IP} <<'ENDSSH'
 chmod +x nginx-conf.sh
 ./nginx-conf.sh
 sudo systemctl status nginx
 ENDSSH
-                        '''
-                    }
+                    '''
                 }
             }
         }
