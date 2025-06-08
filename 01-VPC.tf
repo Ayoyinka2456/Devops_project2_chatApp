@@ -61,14 +61,14 @@ resource "aws_internet_gateway" "chatapp-igw" {
 
 # Elastic-Ip-1  for NAT- subent 2a
 resource "aws_eip" "chatapp_eip_1" {
-  vpc = true
+  domanin = "vpc"
   tags = {
     Name = "chatapp NAT EIP_1"
   }
 }
 # Elastic-Ip-2  for NAT- subnet 2b
 resource "aws_eip" "chatapp_eip_2" {
-  vpc = true
+  domain = "vpc"
   tags = {
     Name = "chatapp NAT EIP_2"
   }
