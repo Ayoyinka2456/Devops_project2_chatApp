@@ -246,7 +246,7 @@ resource "aws_iam_instance_profile" "chatapp-ec2-instance-profile" {
 }
 
 # 4. Attach IAM Instance Profile to EC2 instance
-resource "aws_instance" "chatapp-k8s-workstation" {
+resource "aws_instance" "chatapp-k8s_workstation" {
   ami                    = "ami-0d0f28110d16ee7d6"
   instance_type          = "t2.medium"
   key_name               = "devops_1"
@@ -263,10 +263,9 @@ resource "aws_instance" "chatapp-k8s-workstation" {
                 #!/bin/bash
                 yum -y update
                 yum -y install git
-                yum -y install ansible
             EOF
   tags = {
-    Name = "chatapp k8s-workstation"
+    Name = "chatapp k8s_workstation"
   }
 }
 
@@ -286,7 +285,7 @@ resource "aws_instance" "chatapp-nginx" {
 #To automate ANsible-master and K8s-workstation
 
 output "k8s_workstation_public_ip" {
-  value = aws_instance.chatapp-k8s-workstation.public_ip
+  value = aws_instance.chatapp-k8s_workstation.public_ip
   description = "Public IP of K8s Workstation"
 }
 
@@ -566,11 +565,11 @@ output "nginx_public_ip" {
 # }
 
 # # 5. Create S3 Bucket for K8s Store
-# resource "aws_s3_bucket" "chatapp-k8s-store" {
-#   bucket = "chatapp-k8s-store"
+# resource "aws_s3_bucket" "chatapp-k8s_store" {
+#   bucket = "chatapp-k8s_store"
 #   force_destroy = true
 #   tags = {
-#     Name        = "chatapp k8s-store"
+#     Name        = "chatapp k8s_store"
 #     Environment = "Production"
 #   }
 # }
