@@ -189,6 +189,13 @@ resource "aws_security_group" "chatapp-all-sg" {
     protocol         = "tcp"
     cidr_blocks      = ["0.0.0.0/0"]
   }
+  ingress {
+    description = "PORT from NGINX APP"
+    from_port        = 3000
+    to_port          = 3000
+    protocol         = "tcp"
+    cidr_blocks      = ["0.0.0.0/0"]
+  }
 
   # ingress {
   #   description      = "Allow all inbound traffic"
