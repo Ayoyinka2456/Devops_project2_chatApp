@@ -1,8 +1,4 @@
 # remote-state-setup.tf
-provider "aws" {
-  region = "us-east-2"
-}
-
 resource "aws_s3_bucket" "terraform_state" {
   bucket = "devops-project2-chatapp-tfstate"
   versioning {
