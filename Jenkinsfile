@@ -57,7 +57,6 @@ pipeline {
                         REPO="ayoyinka/chatapp"
                         TAG=1
 
-                        # ✅ Updated Git logic for existing directory
                         if [ -d "$REPO_DIR" ]; then
                             cd "$REPO_DIR"
                             if [ -d ".git" ]; then
@@ -101,8 +100,6 @@ pipeline {
             }
         }
 
-        // Terraform, Ansible, and remaining stages unchanged
-        // ⬇ (they remain intact for consistency and correctness, based on your setup)
         stage('Terraform') {
             agent { label 'TF_ANS_Server' }
             steps {
@@ -111,14 +108,31 @@ pipeline {
                         sh '''
                             echo "🧹 Cleaning up previous Kubernetes workstation..."
                             cd Devops_project2_chatApp
+
+                            echo "🔁 Restoring backend.tf for remote state..."
                             cp backup/backend.tf .
-                            yes | terraform init -reconfigure
-                            terraform plan
-                            #terraform apply -auto-approve
+
+                            echo "🔧 Reconfiguring Terraform to use remote state (S3)..."
+                            terraform init -reconfigure
+
+                            echo "📊 Running terraform plan to detect changes..."
+                            terraform plan -out=tfplan
+
+                            echo "🔍 Checking for actual infrastructure changes..."
+                            if grep -q "No changes. Your infrastructure matches the configuration." <<< "$(terraform show -no-color tfplan)"; then
+                                echo "✅ No changes detected in Terraform files. Skipping apply."
+                            else
+                                echo "⚠️ Changes detected. Proceeding to apply."
+                                terraform apply -auto-approve tfplan
+                            fi
+
+                            echo "🔐 Fixing PEM file permissions..."
                             chmod 400 Devops_project2_chatApp/k8s-admin-setup/devops_1.pem
+
+                            echo "🚀 Connecting to remote Kubernetes workstation to clean up..."
                             ssh -o StrictHostKeyChecking=no -i Devops_project2_chatApp/k8s-admin-setup/devops_1.pem ec2-user@${K8S_IP} <<'ENDSSH'
 if command -v eksctl &> /dev/null; then
-    echo "🗑 Deleting existing Kubernetes cluster..."
+    echo "🗑 Deleting existing Kubernetes cluster resources..."
     kubectl delete all --all --all-namespaces
     kubectl delete pvc --all --all-namespaces
     kubectl delete configmap --all --all-namespaces
@@ -128,32 +142,26 @@ if command -v eksctl &> /dev/null; then
     eksctl delete cluster --name chatapp-cluster --region us-east-2 --force
     sleep 180
 else
-    echo "eksctl not found on remote instance."
+    echo "⚠️ eksctl not found on remote instance."
 fi
 ENDSSH
                         '''
                     } else {
                         sh '''
                             echo "🚀 Running Terraform..."
-                            # 1. Apply infra with local state
                             cd Devops_project2_chatApp
                             terraform init
                             terraform apply -auto-approve
-                            # { printf '\n\n\n\n\n'; cat terraform.tfstate; } >> /${WORKSPACE}/tfstate-protection.txt
-                            { 
+                            {
                               echo "===== Backup on $(date) =====";
                               cat terraform.tfstate;
-                              echo; echo; echo; echo; echo; 
+                              echo; echo; echo; echo; echo;
                             } >> /${WORKSPACE}/tfstate-protection.txt
 
-
-                            
-                            # 2. Setup remote backend
                             cd remote-state
                             terraform init
                             terraform apply -auto-approve
-                            
-                            # 3. Reconfigure Terraform to use remote backend
+
                             cd ../
                             cp backup/backend.tf .
                             yes | terraform init -reconfigure
@@ -210,7 +218,7 @@ EOF
                         ssh -o StrictHostKeyChecking=no -i devops_1.pem ec2-user@${K8S_IP} <<'ENDSSH'
 cd /home/ec2-user/k8s-admin-setup
 chmod +x service_info.sh
-./generate_service_info.sh
+./service_info.sh
 ENDSSH
 
                         scp -o StrictHostKeyChecking=no -i devops_1.pem ec2-user@${K8S_IP}:/home/ec2-user/k8s-admin-setup/SVC_*.txt .
