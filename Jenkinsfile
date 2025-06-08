@@ -135,13 +135,21 @@ ENDSSH
                     } else {
                         sh '''
                             echo "🚀 Running Terraform..."
+                            # 1. Apply infra with local state
                             cd Devops_project2_chatApp
-                            cp backup/remote-state-setup.tf .
                             terraform init
                             terraform apply -auto-approve
+                            
+                            # 2. Setup remote backend
+                            cd remote-state
+                            terraform init
+                            terraform apply -auto-approve
+                            
+                            # 3. Reconfigure Terraform to use remote backend
+                            cd ../
                             cp backup/backend.tf .
                             yes | terraform init -reconfigure
-                            terraform apply -auto-approve
+
                             sleep 120
                             NGINX_IP=$(terraform output -raw nginx_public_ip)
                             K8S_IP=$(terraform output -raw k8s_workstation_public_ip)
