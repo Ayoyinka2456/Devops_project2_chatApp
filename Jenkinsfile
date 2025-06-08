@@ -114,7 +114,7 @@ pipeline {
                             cp backup/backend.tf .
                             yes | terraform init -reconfigure
                             terraform plan
-                            terraform apply -auto-approve
+                            #terraform apply -auto-approve
                             chmod 400 Devops_project2_chatApp/k8s-admin-setup/devops_1.pem
                             ssh -o StrictHostKeyChecking=no -i Devops_project2_chatApp/k8s-admin-setup/devops_1.pem ec2-user@${K8S_IP} <<'ENDSSH'
 if command -v eksctl &> /dev/null; then
