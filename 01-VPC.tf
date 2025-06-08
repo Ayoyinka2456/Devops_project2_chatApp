@@ -285,7 +285,7 @@ resource "aws_instance" "chatapp-nginx" {
 }
 #To automate ANsible-master and K8s-workstation
 
-output "k8s-workstation_public_ip" {
+output "k8s_workstation_public_ip" {
   value = aws_instance.chatapp-k8s-workstation.public_ip
   description = "Public IP of K8s Workstation"
 }
