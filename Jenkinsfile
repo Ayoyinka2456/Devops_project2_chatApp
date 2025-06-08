@@ -139,6 +139,14 @@ ENDSSH
                             cd Devops_project2_chatApp
                             terraform init
                             terraform apply -auto-approve
+                            # { printf '\n\n\n\n\n'; cat terraform.tfstate; } >> /${WORKSPACE}/tfstate-protection.txt
+                            { 
+                              echo "===== Backup on $(date) =====";
+                              cat terraform.tfstate;
+                              echo; echo; echo; echo; echo; 
+                            } >> /${WORKSPACE}/tfstate-protection.txt
+
+
                             
                             # 2. Setup remote backend
                             cd remote-state
