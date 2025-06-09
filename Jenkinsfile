@@ -149,7 +149,11 @@ ENDSSH
                     } else {
                         sh '''
                             echo "🚀 Running Terraform..."
-                            cd Devops_project2_chatApp
+                            cd Devops_project2_chatApp/remote-state
+                            terraform init
+                            terraform apply -auto-approve
+                            sleep 60
+                            cd ../
                             terraform init
                             terraform apply -auto-approve
                             {
@@ -157,14 +161,14 @@ ENDSSH
                               cat terraform.tfstate;
                               echo; echo; echo; echo; echo;
                             } >> /${WORKSPACE}/tfstate-protection.txt
-
-                            cd remote-state
-                            terraform init
-                            terraform apply -auto-approve
-
-                            cd ../
+                            
+                          #  aws s3 cp terraform.tfstate s3://devops-project2-chatapp-tfstate/terraform.tfstate \
+                          #      --content-type application/json \
+                          #      --metadata-directive REPLACE
+                            
                             cp backup/backend.tf .
                             yes | terraform init -reconfigure
+                            terraform apply -auto-approve
 
                             sleep 120
                             NGINX_IP=$(terraform output -raw nginx_public_ip)
