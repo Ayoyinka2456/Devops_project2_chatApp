@@ -82,7 +82,7 @@ pipeline {
             steps {
                 script {
                     # Set the target VPC name
-                    TARGET_VPC_NAME="indiana-vpc"
+                    TARGET_VPC_NAME="chatapp-vpc"
                     
                     # Check if the Terraform state contains a resource with that name
                     if terraform state list | grep -q "aws_vpc.*${TARGET_VPC_NAME}"; then
