@@ -14,6 +14,14 @@
 
     - name: Apply the Kubernetes deployment
       shell: |
+        TAG=$(cat "${WORKSPACE}/TAG.txt" | tr -d '[:space:]')
+        K8S_IP=$(cat "${WORKSPACE}/K8S_IP.txt" | tr -d '[:space:]')
+        NGINX_IP=$(cat "${WORKSPACE}/NGINX_IP.txt" | tr -d '[:space:]')
+        
+        echo "TAG=$TAG"
+        echo "K8S_IP=$K8S_IP"
+        echo "NGINX_IP=$NGINX_IP"
+
         python3 render.py
         kubectl apply -f /home/ec2-user/deployment.yml
         sleep 300
