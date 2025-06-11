@@ -4,19 +4,19 @@
   become: yes
   tasks:
 
-    - name: Copy project_deployment.yml to k8s workstation
-      copy:
-        src: deployment.yml
-        dest: /home/ec2-user/deployment.yml
-        owner: ec2-user
-        group: ec2-user
-        mode: '0644'
+    # - name: Copy project_deployment.yml to k8s workstation
+    #   copy:
+    #     src: deployment.yml
+    #     dest: /home/ec2-user/deployment.yml
+    #     owner: ec2-user
+    #     group: ec2-user
+    #     mode: '0644'
 
     - name: Apply the Kubernetes deployment
       shell: |
-        TAG=$(cat "${WORKSPACE}/TAG.txt" | tr -d '[:space:]')
-        K8S_IP=$(cat "${WORKSPACE}/K8S_IP.txt" | tr -d '[:space:]')
-        NGINX_IP=$(cat "${WORKSPACE}/NGINX_IP.txt" | tr -d '[:space:]')
+        TAG=$(cat "${TAG.txt" | tr -d '[:space:]')
+        K8S_IP=$(cat "${K8S_IP.txt" | tr -d '[:space:]')
+        NGINX_IP=$(cat "${NGINX_IP.txt" | tr -d '[:space:]')
         
         echo "TAG=$TAG"
         echo "K8S_IP=$K8S_IP"
