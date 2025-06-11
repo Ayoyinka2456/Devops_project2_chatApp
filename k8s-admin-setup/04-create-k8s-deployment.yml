@@ -1,6 +1,6 @@
 ---
 - name: Copy and apply Kubernetes deployment
-  hosts: k8s-workstation
+  hosts: k8s_workstation
   become: yes
   tasks:
     - name: Copy NGINX_IP.txt to the k8s-admin-setup directory
