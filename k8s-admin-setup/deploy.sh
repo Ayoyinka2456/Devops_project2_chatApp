@@ -19,7 +19,9 @@ python3 render.py
 sudo chown ec2-user:ec2-user deployment.yml
 echo "Deploying pods"
 kubectl apply -f deployment.yml
-sleep 300
+sleep 60
+
+
 # echo "Getting Service DNS and Port"
 # chmod +x service_info.sh
 # ./service_info.sh
