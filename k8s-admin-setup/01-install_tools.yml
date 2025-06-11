@@ -2,7 +2,7 @@
 
 ---
 - name: Install Kubernetes Admin Tools
-  hosts: k8s-workstation
+  hosts: k8s_workstation
   become: yes
 
   roles:
