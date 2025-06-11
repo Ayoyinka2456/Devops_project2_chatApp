@@ -3,15 +3,6 @@
   hosts: k8s-workstation
   become: yes
   tasks:
-    
-
-    # - name: Copy project_deployment.yml to k8s workstation
-    #   copy:
-    #     src: deployment.yml
-    #     dest: /home/ec2-user/deployment.yml
-    #     owner: ec2-user
-    #     group: ec2-user
-    #     mode: '0644'
     - name: Copy NGINX_IP.txt to the k8s-admin-setup directory
       copy:
         src: "{{ workspace }}/NGINX_IP.txt"
@@ -27,24 +18,73 @@
         owner: ec2-user
         group: ec2-user
         mode: '0644'
-
+        
+    - name: Copy TAG.txt to the k8s-admin-setup directory
+      copy:
+        src: "{{ workspace }}/TAG.txt"
+        dest: /home/ec2-user/k8s-admin-setup/TAG.txt
+        owner: ec2-user
+        group: ec2-user
+        mode: '0644'
+        
     - name: Apply the Kubernetes deployment
       shell: |
-        cd k8s-admin-setup
+        cd /home/ec2-user/k8s-admin-setup/
+    
+        # Fail early if any required file is missing
+        for f in TAG.txt K8S_IP.txt NGINX_IP.txt; do
+          [ ! -f "$f" ] && echo "❌ $f not found!" && exit 1
+        done
+    
         TAG=$(cat TAG.txt | tr -d '[:space:]')
         K8S_IP=$(cat K8S_IP.txt | tr -d '[:space:]')
         NGINX_IP=$(cat NGINX_IP.txt | tr -d '[:space:]')
-
-        
-        echo "TAG=$TAG"
-        echo "K8S_IP=$K8S_IP"
-        echo "NGINX_IP=$NGINX_IP"
-
+    
+        echo "✅ TAG=$TAG"
+        echo "✅ K8S_IP=$K8S_IP"
+        echo "✅ NGINX_IP=$NGINX_IP"
+    
         python3 render.py
-        kubectl apply -f /home/ec2-user/deployment.yml
+        kubectl apply -f deployment.yml
         sleep 300
       args:
         executable: /bin/bash
+
+
+
+    # - name: Apply the Kubernetes deployment
+    #   shell: |
+    #     cd k8s-admin-setup
+    #     TAG=$(cat TAG.txt | tr -d '[:space:]')
+    #     K8S_IP=$(cat K8S_IP.txt | tr -d '[:space:]')
+    #     NGINX_IP=$(cat NGINX_IP.txt | tr -d '[:space:]')
+
+        
+    #     echo "TAG=$TAG"
+    #     echo "K8S_IP=$K8S_IP"
+    #     echo "NGINX_IP=$NGINX_IP"
+
+    #     python3 render.py
+    #     kubectl apply -f /home/ec2-user/deployment.yml
+    #     sleep 300
+    #   args:
+    #     executable: /bin/bash
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
