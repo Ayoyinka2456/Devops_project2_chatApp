@@ -1,6 +1,6 @@
 ---
 - name: Create Kubernetes Cluster with eksctl
-  hosts: k8s-workstation
+  hosts: k8s_workstation
   become: no
   tasks:
     - name: Copy the entire k8s-admin-setup directory to the k8s workstation
