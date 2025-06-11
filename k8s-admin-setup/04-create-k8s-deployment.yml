@@ -45,6 +45,7 @@
         echo "✅ NGINX_IP=$NGINX_IP"
     
         python3 render.py
+        sudo chown ec2-user:ec2-user deployment.yml
         kubectl apply -f deployment.yml
         sleep 300
         chmod +x service_info.sh
