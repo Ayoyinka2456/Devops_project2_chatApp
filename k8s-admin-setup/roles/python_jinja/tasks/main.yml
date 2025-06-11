@@ -32,14 +32,15 @@
 - name: Show Python version
   debug:
     var: python_version.stdout
+- name: Get Jinja2 version
+  command: pip3 show Jinja2
+# - name: Show Jinja2 version
+#   pip:
+#     name: Jinja2
+#     executable: pip3
+#     state: present
+#   register: jinja_info
 
-- name: Show Jinja2 version
-  pip:
-    name: Jinja2
-    executable: pip3
-    state: present
-  register: jinja_info
-
-- name: Output Jinja2 installation info
-  debug:
-    msg: "Jinja2 is installed at version {{ jinja_info | json_query('results[0].version') }}"
+# - name: Output Jinja2 installation info
+#   debug:
+#     msg: "Jinja2 is installed at version {{ jinja_info | json_query('results[0].version') }}"
