@@ -13,5 +13,6 @@ echo "$SVC_PORT" > SVC_PORT.txt
 
 # Save both to a single file too, if needed
 echo "${SVC_DNS}:${SVC_PORT}" > external-ip.txt
-
+# Fix permissions
+chown ec2-user:ec2-user SVC_DNS.txt SVC_PORT.txt external-ip.txt
 echo "✅ Saved DNS to SVC_DNS.txt and Port to SVC_PORT.txt"
