@@ -3,15 +3,24 @@
   hosts: k8s-workstation
   become: no
   tasks:
-    - name: Copy cluster.sh to k8s workstation
+    - name: Copy the entire k8s-admin-setup directory to the k8s workstation
       copy:
-        src: cluster.sh
-        dest: /home/ec2-user/cluster.sh
+        src: k8s-admin-setup
+        dest: /home/ec2-user/
         owner: ec2-user
         group: ec2-user
-        mode: '0755'  # make it executable directly
-
-    - name: Run EKSCTL create cluster script
-      shell: /home/ec2-user/cluster.sh
+        mode: '0755'              # Safe default for files
+        directory_mode: '0755'    # Directories should be executable to allow cd
+    
+    - name: Make only cluster.sh executable
+      file:
+        path: /home/ec2-user/k8s-admin-setup/cluster.sh
+        mode: '0755'
+        owner: ec2-user
+        group: ec2-user
+    
+    - name: Run cluster.sh to create EKS cluster
+      shell: ./cluster.sh
       args:
+        chdir: /home/ec2-user/k8s-admin-setup
         executable: /bin/bash
