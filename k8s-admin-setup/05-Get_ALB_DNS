@@ -1,0 +1,17 @@
+---
+- name: Copy and apply Kubernetes deployment
+  hosts: k8s-workstation
+  become: no
+  tasks:
+
+    - name: See output of Kubernetes deployment
+      shell: |
+        cd /home/ec2-user/k8s-admin-setup
+        chmod +x service_info.sh
+        ./service_info.sh
+        export K8S_IP=$(cat K8S_IP.txt | tr -d '[:space:]')
+        export NGINX_IP=$(cat NGINX_IP.txt | tr -d '[:space:]')
+        chmod 400 devops_1.pem
+        scp -o StrictHostKeyChecking=no -i devops_1.pem SVC* nginx-conf.sh ec2-user@${NGINX_IP}:/home/ec2-user
+      args:
+        executable: /bin/bash
