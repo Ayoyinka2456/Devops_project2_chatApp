@@ -1,51 +1,95 @@
-# install_weave_tools.yml
+# # install_weave_tools.yml
 
-- name: Install eksctl and weaveworks tap -- Download eksctl archive
-  get_url:
-    url: "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_{{ ansible_system }}_amd64.tar.gz"
-    dest: /tmp/eksctl.tar.gz
-
-- name: Extract eksctl
-  unarchive:
-    src: /tmp/eksctl.tar.gz
-    dest: /tmp/
-    remote_src: yes
-
-- name: Move eksctl to /usr/local/bin
-  copy:
-    src: /tmp/eksctl
-    dest: /usr/local/bin/eksctl
-    mode: '0755'
-
-- name: Clean up eksctl archive
-  file:
-    path: /tmp/eksctl.tar.gz
-    state: absent
-
-- name: Show eksctl version
-  command: eksctl version
-  register: eksctl_output
-  ignore_errors: yes
-
-- debug:
-    var: eksctl_output.stdout
-
-- name: Get latest tag for TAP CLI
+---
+- name: Install AWS CLI, kubectl, eksctl, and weaveworks tap using a shell script
+  become: true
   shell: |
-    curl -s https://api.github.com/repos/weaveworks/tap/releases/latest | jq -r '.tag_name'
-  register: tap_latest_tag
+    #!/bin/bash
+    set -e
 
-- name: Download weaveworks tap binary
-  get_url:
-    url: "https://github.com/weaveworks/tap/releases/download/{{ tap_latest_tag.stdout }}/tap-linux-amd64"
-    dest: /usr/local/bin/tap
-    mode: '0755'
+    echo "🔧 Updating packages..."
+    yum update -y
 
-- name: Show tap version
-  command: tap version
-  register: tap_output
-  ignore_errors: yes
+    echo "📦 Installing curl, tar, gzip, unzip, jq..."
+    yum install -y curl tar gzip unzip jq --allowerasing
 
-- debug:
-    var: tap_output.stdout
+    echo "✅ Installing AWS CLI v2..."
+    curl -s "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+    unzip -q awscliv2.zip
+    ./aws/install
+    rm -rf aws awscliv2.zip
+    aws --version
+
+    echo "✅ Installing latest kubectl..."
+    K8S_VERSION=$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)
+    curl -LO "https://dl.k8s.io/release/${K8S_VERSION}/bin/linux/amd64/kubectl"
+    chmod +x kubectl
+    mv kubectl /usr/local/bin/
+    kubectl version --client
+
+    echo "✅ Installing eksctl (weaveworks/tap/eksctl)..."
+    curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" -o eksctl.tar.gz
+    tar -xzf eksctl.tar.gz
+    mv eksctl /usr/local/bin/
+    rm -f eksctl.tar.gz
+    eksctl version
+
+    echo "✅ Installing weaveworks tap CLI..."
+    TAP_LATEST=$(curl -s https://api.github.com/repos/weaveworks/tap/releases/latest | jq -r '.tag_name')
+    curl -LO "https://github.com/weaveworks/tap/releases/download/${TAP_LATEST}/tap-linux-amd64"
+    chmod +x tap-linux-amd64
+    mv tap-linux-amd64 /usr/local/bin/tap
+    tap version || echo "ℹ️ 'tap' installed but may need login/config to show version."
+
+    echo "✅ All tools installed successfully!"
+
+
+# - name: Install eksctl and weaveworks tap -- Download eksctl archive
+#   get_url:
+#     url: "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_{{ ansible_system }}_amd64.tar.gz"
+#     dest: /tmp/eksctl.tar.gz
+
+# - name: Extract eksctl
+#   unarchive:
+#     src: /tmp/eksctl.tar.gz
+#     dest: /tmp/
+#     remote_src: yes
+
+# - name: Move eksctl to /usr/local/bin
+#   copy:
+#     src: /tmp/eksctl
+#     dest: /usr/local/bin/eksctl
+#     mode: '0755'
+
+# - name: Clean up eksctl archive
+#   file:
+#     path: /tmp/eksctl.tar.gz
+#     state: absent
+
+# - name: Show eksctl version
+#   command: eksctl version
+#   register: eksctl_output
+#   ignore_errors: yes
+
+# - debug:
+#     var: eksctl_output.stdout
+
+# - name: Get latest tag for TAP CLI
+#   shell: |
+#     curl -s https://api.github.com/repos/weaveworks/tap/releases/latest | jq -r '.tag_name'
+#   register: tap_latest_tag
+
+# - name: Download weaveworks tap binary
+#   get_url:
+#     url: "https://github.com/weaveworks/tap/releases/download/{{ tap_latest_tag.stdout }}/tap-linux-amd64"
+#     dest: /usr/local/bin/tap
+#     mode: '0755'
+
+# - name: Show tap version
+#   command: tap version
+#   register: tap_output
+#   ignore_errors: yes
+
+# - debug:
+#     var: tap_output.stdout
 
