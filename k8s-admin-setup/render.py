@@ -2,7 +2,9 @@ from jinja2 import Environment, FileSystemLoader
 
 # Read the counter value from counter.txt
 with open('TAG.txt') as f:
-    counter = f.read().strip()
+    #counter = f.read().strip()
+    TAG = f.read().strip()
+
 
 # Set up Jinja2 environment
 env = Environment(loader=FileSystemLoader('.'))
