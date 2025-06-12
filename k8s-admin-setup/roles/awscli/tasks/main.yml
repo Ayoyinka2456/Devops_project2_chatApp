@@ -1,0 +1,43 @@
+---
+- name: Check if AWS CLI is already installed
+  command: aws --version
+  register: awscli_check
+  ignore_errors: yes
+
+- name: Set install_needed if AWS CLI is not found
+  set_fact:
+    install_needed: true
+  when: awscli_check.rc != 0
+
+- name: Ensure unzip is installed
+  package:
+    name: unzip
+    state: present
+  when: install_needed | default(false)
+
+- name: Download AWS CLI v2 installer
+  get_url:
+    url: https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip
+    dest: /tmp/awscliv2.zip
+    mode: '0644'
+  when: install_needed | default(false)
+
+- name: Unpack AWS CLI installer
+  unarchive:
+    src: /tmp/awscliv2.zip
+    dest: /tmp
+    remote_src: yes
+  when: install_needed | default(false)
+
+- name: Install AWS CLI
+  command: /tmp/aws/install
+  when: install_needed | default(false)
+
+- name: Clean up installer files
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /tmp/awscliv2.zip
+    - /tmp/aws
+  when: install_needed | default(false)

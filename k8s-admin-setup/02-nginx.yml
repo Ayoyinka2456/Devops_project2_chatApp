@@ -1,0 +1,7 @@
+---
+- name: Install NGINX Tool
+  hosts: nginx
+  become: yes
+
+  roles:
+    - nginx

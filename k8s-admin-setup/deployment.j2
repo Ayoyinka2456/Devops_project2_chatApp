@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chatapp-deployment
+  labels:
+    app: chatapp
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: chatapp
+  template:
+    metadata:
+      labels:
+        app: chatapp
+    spec:
+      containers:
+        - name: chatapp
+          image: ayoyinka/chatapp:{{ TAG }}
+          ports:
+            - containerPort: 3000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: chatapp-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: chatapp
+  ports:
+    - port: 3000
+      targetPort: 3000

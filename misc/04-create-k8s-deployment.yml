@@ -1,0 +1,67 @@
+---
+- name: Copy and apply Kubernetes deployment
+  hosts: k8s_workstation
+  become: yes
+  tasks:
+    - name: Copy NGINX_IP.txt to the k8s-admin-setup directory
+      copy:
+        src: "{{ workspace }}/NGINX_IP.txt"
+        dest: /home/ec2-user/k8s-admin-setup/NGINX_IP.txt
+        owner: ec2-user
+        group: ec2-user
+        mode: '0644'
+    
+    - name: Copy K8S_IP.txt to the k8s-admin-setup directory
+      copy:
+        src: "{{ workspace }}/K8S_IP.txt"
+        dest: /home/ec2-user/k8s-admin-setup/K8S_IP.txt
+        owner: ec2-user
+        group: ec2-user
+        mode: '0644'
+        
+    - name: Copy TAG.txt to the k8s-admin-setup directory
+      copy:
+        src: "{{ workspace }}/TAG.txt"
+        dest: /home/ec2-user/k8s-admin-setup/TAG.txt
+        owner: ec2-user
+        group: ec2-user
+        mode: '0644'
+        
+    - name: Make only deploy.sh executable
+      file:
+        path: /home/ec2-user/k8s-admin-setup/deploy.sh
+        mode: '0755'
+        owner: ec2-user
+        group: ec2-user
+    
+    - name: Run deploy.sh to create EKS cluster
+      shell: ./deploy.sh
+      args:
+        chdir: /home/ec2-user/k8s-admin-setup
+        executable: /bin/bash
+        
+    # - name: Apply the Kubernetes deployment
+    #   shell: |
+    #     cd /home/ec2-user/k8s-admin-setup/
+    
+    #     # Fail early if any required file is missing
+    #     for f in TAG.txt K8S_IP.txt NGINX_IP.txt; do
+    #       [ ! -f "$f" ] && echo "❌ $f not found!" && exit 1
+    #     done
+    
+    #     export TAG=$(cat TAG.txt | tr -d '[:space:]')
+    #     export K8S_IP=$(cat K8S_IP.txt | tr -d '[:space:]')
+    #     export NGINX_IP=$(cat NGINX_IP.txt | tr -d '[:space:]')
+    
+    #     echo "✅ TAG=$TAG"
+    #     echo "✅ K8S_IP=$K8S_IP"
+    #     echo "✅ NGINX_IP=$NGINX_IP"
+    
+    #     python3 render.py
+    #     sudo chown ec2-user:ec2-user deployment.yml
+    #     kubectl apply -f deployment.yml
+    #     sleep 300
+    #     chmod +x service_info.sh
+    #     ./service_info.sh
+    #   args:
+    #     executable: /bin/bash

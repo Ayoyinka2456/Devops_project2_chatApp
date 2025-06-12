@@ -1,0 +1,46 @@
+---
+- name: Update system packages
+  become: true
+  dnf:
+    name: "*"
+    state: latest
+    update_cache: yes
+
+- name: Install Python 3
+  become: true
+  dnf:
+    name: python3
+    state: present
+
+- name: Install pip3
+  become: true
+  dnf:
+    name: python3-pip
+    state: present
+
+- name: Install Jinja2
+  become: true
+  pip:
+    name: Jinja2
+    executable: pip3
+    state: present
+
+- name: Verify Python version
+  command: python3 --version
+  register: python_version
+
+- name: Show Python version
+  debug:
+    var: python_version.stdout
+- name: Get Jinja2 version
+  command: pip3 show Jinja2
+# - name: Show Jinja2 version
+#   pip:
+#     name: Jinja2
+#     executable: pip3
+#     state: present
+#   register: jinja_info
+
+# - name: Output Jinja2 installation info
+#   debug:
+#     msg: "Jinja2 is installed at version {{ jinja_info | json_query('results[0].version') }}"
