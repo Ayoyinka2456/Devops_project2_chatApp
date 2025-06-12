@@ -290,6 +290,7 @@ ENDSSH
                         ssh -o StrictHostKeyChecking=no -i k8s-admin-setup/devops_1.pem ec2-user@${NGINX_IP} <<'ENDSSH'
 chmod +x nginx-conf.sh
 ./nginx-conf.sh
+sudo systemctl restart nginx
 ENDSSH
                         echo "✅ Click here :-> http://${NGINX_IP}:3000"
                     '''
