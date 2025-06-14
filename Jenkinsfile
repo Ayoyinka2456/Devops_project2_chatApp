@@ -250,11 +250,11 @@ echo "✅ NGINX_IP=$NGINX_IP"
 
 ls -la
 pwd
-python3 render.py && \
-sudo chown ec2-user:ec2-user deployment.yml && \
-echo "Deploying pods" && \
+python3 render.py
+sleep 30
+sudo chown ec2-user:ec2-user deployment.yml
+echo "Deploying pods"
 kubectl apply -f deployment.yml
-
 sleep 60
 
 echo "🔍 Getting service DNS and port..."
