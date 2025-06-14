@@ -9,7 +9,7 @@ pipeline {
                 label 'Jenkins_Server'
             }
             steps {
-                git branch: 'troubleshoot', url: 'https://github.com/Ayoyinka2456/Devops_project2_chatApp.git'
+                git branch: 'main', url: 'https://github.com/Ayoyinka2456/Devops_project2_chatApp.git'
             }
         }
         stage('Restore Artifacts') {
@@ -72,17 +72,17 @@ pipeline {
                             cd "$REPO_DIR"
                             if [ -d ".git" ]; then
                                 echo "🔄 Pulling latest changes in existing repo..."
-                                git pull origin troubleshoot
+                                git pull origin main
                             else
                                 echo "⚠️ Directory exists but is not a Git repo. Re-cloning..."
                                 cd ..
                                 rm -rf "$REPO_DIR"
-                                git clone -b troubleshoot https://github.com/Ayoyinka2456/Devops_project2_chatApp.git
+                                git clone -b main https://github.com/Ayoyinka2456/Devops_project2_chatApp.git
                                 cd "$REPO_DIR"
                             fi
                         else
                             echo "📥 Cloning repository..."
-                            git clone -b troubleshoot https://github.com/Ayoyinka2456/Devops_project2_chatApp.git
+                            git clone -b main https://github.com/Ayoyinka2456/Devops_project2_chatApp.git
                             cd "$REPO_DIR"
                         fi
 
